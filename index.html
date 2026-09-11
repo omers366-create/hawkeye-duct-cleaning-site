@@ -719,7 +719,7 @@
   });
 
   var form = document.getElementById('lead-form');
-  var status = document.getElementById('form-status');
+  var statusEl = document.getElementById('form-status');
   var LEAD_WEBHOOK_URL = 'https://hook.us2.make.com/k41zkmqj4l14tyku33qarqbv7x2pfeuk';
 
   function sendMailtoFallback(name, phone, city, offer, notes){
@@ -727,8 +727,8 @@
     var body = 'Name: ' + name + '\nPhone: ' + phone + '\nCity: ' + city + '\nInterested in: ' + offer + '\nNotes: ' + (notes || '—');
     var mailto = 'mailto:omersbusiness366@gmail.com?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
     window.location.href = mailto;
-    status.textContent = 'Opening your email app — just hit send once it loads.';
-    status.classList.add('show');
+    statusEl.textContent = 'Opening your email app — just hit send once it loads.';
+    statusEl.classList.add('show');
   }
 
   form.addEventListener('submit', function(e){
@@ -740,15 +740,15 @@
     var notes = document.getElementById('f-notes').value.trim();
 
     if(!name || !phone || !city){
-      status.textContent = 'Please fill in your name, phone, and city.';
-      status.classList.add('show');
+      statusEl.textContent = 'Please fill in your name, phone, and city.';
+      statusEl.classList.add('show');
       return;
     }
 
     var submitBtn = form.querySelector('button[type="submit"]');
     if(submitBtn){ submitBtn.disabled = true; }
-    status.textContent = 'Sending your request…';
-    status.classList.add('show');
+    statusEl.textContent = 'Sending your request…';
+    statusEl.classList.add('show');
 
     fetch(LEAD_WEBHOOK_URL, {
       method: 'POST',
@@ -756,7 +756,7 @@
       body: JSON.stringify({ name: name, phone: phone, city: city, offer: offer, notes: notes, source: 'website' })
     }).then(function(res){
       if(!res.ok){ throw new Error('bad status'); }
-      status.textContent = 'Thanks! We got your request and will be in touch shortly.';
+      statusEl.textContent = 'Thanks! We got your request and will be in touch shortly.';
       form.reset();
     }).catch(function(){
       sendMailtoFallback(name, phone, city, offer, notes);
