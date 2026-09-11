@@ -683,7 +683,7 @@
         <textarea id="f-notes" name="notes" rows="3"></textarea>
       </div>
       <button class="btn btn-primary" type="submit" style="width:100%;">Send My Request</button>
-      <p class="form-note">This opens your email app with your details filled in, ready to send.</p>
+      <p class="form-note">We’ll get your request right away and follow up shortly.</p>
       <p id="form-status"></p>
     </form>
   </div>
@@ -720,6 +720,17 @@
 
   var form = document.getElementById('lead-form');
   var status = document.getElementById('form-status');
+  var LEAD_WEBHOOK_URL = 'https://hook.us2.make.com/k41zkmqj4l14tyku33qarqbv7x2pfeuk';
+
+  function sendMailtoFallback(name, phone, city, offer, notes){
+    var subject = 'Hawk Eye request — ' + name + ' (' + city + ')';
+    var body = 'Name: ' + name + '\nPhone: ' + phone + '\nCity: ' + city + '\nInterested in: ' + offer + '\nNotes: ' + (notes || '—');
+    var mailto = 'mailto:omersbusiness366@gmail.com?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+    window.location.href = mailto;
+    status.textContent = 'Opening your email app — just hit send once it loads.';
+    status.classList.add('show');
+  }
+
   form.addEventListener('submit', function(e){
     e.preventDefault();
     var name = document.getElementById('f-name').value.trim();
@@ -734,13 +745,24 @@
       return;
     }
 
-    var subject = 'Hawk Eye request — ' + name + ' (' + city + ')';
-    var body = 'Name: ' + name + '\nPhone: ' + phone + '\nCity: ' + city + '\nInterested in: ' + offer + '\nNotes: ' + (notes || '—');
-    var mailto = 'mailto:omers366@gmail.com?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
-    window.location.href = mailto;
-
-    status.textContent = 'Opening your email app — just hit send once it loads.';
+    var submitBtn = form.querySelector('button[type="submit"]');
+    if(submitBtn){ submitBtn.disabled = true; }
+    status.textContent = 'Sending your request…';
     status.classList.add('show');
+
+    fetch(LEAD_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: name, phone: phone, city: city, offer: offer, notes: notes, source: 'website' })
+    }).then(function(res){
+      if(!res.ok){ throw new Error('bad status'); }
+      status.textContent = 'Thanks! We got your request and will be in touch shortly.';
+      form.reset();
+    }).catch(function(){
+      sendMailtoFallback(name, phone, city, offer, notes);
+    }).finally(function(){
+      if(submitBtn){ submitBtn.disabled = false; }
+    });
   });
 </script>
 
